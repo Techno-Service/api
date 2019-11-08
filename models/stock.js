@@ -2,9 +2,11 @@ const config = require('../config')
 const Joi = require('joi')
 const mongoose = require('mongoose')
 const _ = require('lodash')
+const moment = require('moment')
+require('moment-timezone')
 const car_compatibility = new mongoose.Schema({
 	brand: { type: String, default: 'BMW'},
-	model: { type: String, default: 'M3' }
+	model: { type: String, default: 'M3' },
 	release:{ type: Number, default:  2019 }
 })
 const stock = new mongoose.Schema({
@@ -26,7 +28,7 @@ const stock = new mongoose.Schema({
 	},
 	created_at: {
 		type: Date,
-		default: Date.now()
+		default: moment.tz('UTC').toDate()
 	},
 	price: {
 		type: Number,
@@ -54,7 +56,7 @@ const stock = new mongoose.Schema({
 		type: Array,
 		default: []
 	},
-	extrnal: {
+	external: {
 		type: Boolean,
 		default: false
 	}
@@ -62,5 +64,5 @@ const stock = new mongoose.Schema({
 
 
 
-const Job = mongoose.model('stock', stock)
-exports.Stock = stock 
+const Stock = mongoose.model('stock', stock)
+exports.Stock = Stock 

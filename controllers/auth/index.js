@@ -43,7 +43,7 @@ const controller = {
 		if (user) {
 			const token = user.generateAuthToken()
 			return res
-		        .header('x-auth-token', token)
+		        .header('Authorization', token)
 		        .send({ new: false, token, ...(_.pick(user, picks))})
 		}
 		// Register If Not Exsist
@@ -58,7 +58,7 @@ const controller = {
 
 		const token = user.generateAuthToken()
 		return res
-		        .header('x-auth-token', token)
+		        .header('Authorization', token)
 		        .send({ new: true, token, ...(_.pick(user, picks))})
 	},
 
@@ -73,7 +73,7 @@ const controller = {
 		if (user) {
 			const token = user.generateAuthToken()
 			return res
-		        .header('x-auth-token', token)
+		        .header('Authorization', token)
 		        .send({ new: false, token, ...(_.pick(user, picks))})
 		}
 		// Register If Not Exsist
@@ -84,7 +84,7 @@ const controller = {
 
 		const token = user.generateAuthToken()
 		return res
-		        .header('x-auth-token', token)
+		        .header('Authorization', token)
 		        .send({ new: true, token, ...(_.pick(user, ['_id', 'name', 'email', 'roles', 'avatar', 'points', 'auth_type','social']))})
 	}
 }

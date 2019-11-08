@@ -1,21 +1,21 @@
 const auth = require('../middleware/auth')
 const express = require('express')
 const router = express.Router()
-const jobController = require('../controllers/job')
+const stockController = require('../controllers/stock')
 
 // Get
-router.get('/' ,jobController.getAll)
+router.get('/' ,stockController.getAll)
 
 // Get One
-router.get('/:id' , auth() ,jobController.getOne)
+router.get('/:id' , auth() ,stockController.getOne)
 
 // Register
-router.post('/', auth() ,jobController.add)
+router.post('/', auth() ,stockController.add)
 
 // Update
-router.put('/:id' , auth() ,jobController.update)
+router.put('/:id' , auth() ,stockController.update)
 
 // Delete
-router.delete('/:id' , auth(),jobController.deleteJob)
+router.delete('/:id' , auth(),stockController.deleteStock)
 
 module.exports = router 

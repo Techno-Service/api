@@ -1,9 +1,11 @@
 const _ = require('lodash')
 const moment = require('moment')
-
+require('moment-timezone')
 
 const config = require('../config')
 const { Job, ValidateJob } = require('../models/job')
+const { Move } = require('../models/move')
+const { Stock } = require('../models/stock')
 const { Deskaf } = require('../models/app')
 
 // Sortable Attributes  
@@ -100,10 +102,26 @@ module.exports = {
 		if (error) return res.status(400).send(error.details[0].message)
 		const instance = await Deskaf.find({})
 	    const job_no = instance && instance[0].jobs_count ? instance[0].jobs_count : 0
+	    const price = _.sumBy(req.body.operations, operation => ((operation.price + operation.fees) * operation.count))
 	    await Deskaf.updateMany({}, { $set: { jobs_count: job_no + 1 } })
-			job = new Job({...req.body, job_no})
-			await job.save()
-			return res.send(job)
+		job = new Job({...req.body, job_no, price ,timein: moment.tz('UTC').toDate()})
+		await job.save()
+		// Update Moves
+		if (req.body.operations && req.body.operations.length) {
+			let i
+			let move
+			for (i = 0; i < req.body.operations.length; i += 1) {
+				if (req.body.operations[i].makeMove) {
+					move = new Move({
+						...req.body.operations[i],
+						...job
+					})
+					await move.save()
+				}
+			}
+		} 
+		
+		return res.send(job)
 	},
 
 
@@ -122,9 +140,10 @@ module.exports = {
 	async update(req, res) {
 		const { error } = ValidateJob(req.body, true) 
 		if (error) return res.status(400).send(error.details[0].message)
-		let payload = req.body
+		const price = _.sumBy(req.body.operations, operation => ((operation.price + operation.fees) * operation.count))
+		let payload = { ...req.body, price }
 		if (payload.status && payload.status.toLowerCase() === 'finished') {
-			payload.timeleave = Date.now()
+			payload.timeleave = moment.tz('UTC').toDate()
 		}
 		const updated = await Job.findOneAndUpdate(
 			{_id: req.params.id},
@@ -138,6 +157,41 @@ module.exports = {
 		if (!updated) {
 			return res.status(404).send('Job Not Found')
 		}
+		// Delete Last Moves
+		const lastMoves = await Move.find({ 'job.job_no': updated.job_no })
+		let m
+		for (m = 0; m < lastMoves.length; m += 1) {
+			if (lastMoves[m].item.makeMove) {
+				await Stock.findOneAndUpdate(
+						{ _id:  lastMoves[m].item._id },
+						{ 
+							$inc: { count:  lastMoves[m].count } 
+						}
+					)
+			}
+			await Move.deleteOne({ '_id': lastMoves[m]._id })
+		}
+		// Update Moves
+		if (req.body.operations && req.body.operations.length) {
+			let i
+			let move
+			for (i = 0; i < req.body.operations.length; i += 1) {
+				if (req.body.operations[i].makeMove) {
+					move = await new Move({
+						item: req.body.operations[i],
+						job: _.pick(updated, ['_id', 'job_no', 'timein', 'timeleave', 'car', 'client']),
+						count: req.body.operations[i].count,
+						price: req.body.operations[i].count * req.body.operations[i].price
+					})
+					await move.save()
+					// Decreament Stock
+					await Stock.findOneAndUpdate(
+						{ _id:  req.body.operations[i]._id },
+						{ $inc: { count:  req.body.operations[i].count * -1 } }
+					)
+				}
+			}
+		} 
 		return res.send(updated)
 	},
 	async deleteJob(req, res) {

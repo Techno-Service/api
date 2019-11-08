@@ -4,7 +4,7 @@ const router = express.Router()
 const jobController = require('../controllers/job')
 
 // Get
-router.get('/' ,jobController.getAll)
+router.get('/' ,auth(), jobController.getAll)
 
 // Get One
 router.get('/:id' , auth() ,jobController.getOne)

@@ -3,7 +3,7 @@ const moment = require('moment')
 
 
 const config = require('../config')
-const { Stock } = require('../models/stock')
+const { Move } = require('../models/move')
 
 // Sortable Attributes  
 const sortableAttributes = ['timein', 'sales', 'price']
@@ -38,10 +38,10 @@ module.exports = {
 			filters.external = external
 		}
 		if (phone && phone.length) {
-			filters['vendor.phone'] = {  $regex: new RegExp( handleSpecialChars(phone), 'i') }
+			filters['item.vendor.phone'] = {  $regex: new RegExp( handleSpecialChars(phone), 'i') }
 		}
 		if (vendorName && vendorName.length) {
-			filters['vendor.name'] = {  $regex: new RegExp( handleSpecialChars(vendorName), 'i') }
+			filters['item.vendor.name'] = {  $regex: new RegExp( handleSpecialChars(vendorName), 'i') }
 		}
 		if (date) {
 			if (date.length === 2) {
@@ -52,21 +52,21 @@ module.exports = {
 			}
 		}
 		if (brandac && brandac.length) {
-			filters['car_compatibility.brand'] = {  $regex: new RegExp( handleSpecialChars(brandac), 'i') }
+			filters['item.car_compatibility.brand'] = {  $regex: new RegExp( handleSpecialChars(brandac), 'i') }
 		} else if (brand && brand.length) {
-				filters['car_compatibility.brand'] = { $in : brand }
+				filters['item.car_compatibility.brand'] = { $in : brand }
 		}
 
 		if (modelac && modelac.length) {
-			filters['car_compatibility.model'] = {  $regex: new RegExp( handleSpecialChars(modelac), 'i') }
+			filters['item.car_compatibility.model'] = {  $regex: new RegExp( handleSpecialChars(modelac), 'i') }
 		} else if (model && model.length) {
-				filters['car_compatibility.model'] = { $in : model }
+				filters['item.car_compatibility.model'] = { $in : model }
 		}
 		if (release && release.length) {
-				filters['car_compatibility.release'] = { $in : release }
+				filters['item.car_compatibility.release'] = { $in : release }
 		}
 		if (part && part.length) {
-			filters['name'] = { $regex: new RegExp( handleSpecialChars(part), 'i') } 
+			filters['item.name'] = { $regex: new RegExp( handleSpecialChars(part), 'i') } 
 		}
 		if (status) {
 			filters.status = status
@@ -81,18 +81,18 @@ module.exports = {
 			}
 		}
 
-		const count = await Stock.find(filters)
+		const count = await Move.find(filters)
 		const pages = Math.ceil(count.length / limit, 10)
 		const sorter = {}
 		sorter[sort] = desc
 		try {
-			const stock = stats ? null : await Stock.find(filters)
+			const move = stats ? null : await Move.find(filters)
 		    .select(select)
 				.skip(page * limit)
 				.limit(limit)
 				.sort(sorter)
 			const result = {
-				stock: stats ? count : stock,
+				move: stats ? count : move,
 				page : stats ? null : page,
 				pages : stats ? null : pages,
 				limit : stats ? null : limit ,
@@ -108,28 +108,28 @@ module.exports = {
 
 	async add(req, res) {
 
-			stock = new Stock({...req.body})
-			await stock.save()
-			return res.send(stock)
+			move = new Move({...req.body})
+			await move.save()
+			return res.send(move)
 	},
 
 
 	// Per One
 	async getOne(req, res) {
 
-		if (!req.params.id || !req.params.id.length) return res.status(400).send('Stock number is required')
+		if (!req.params.id || !req.params.id.length) return res.status(400).send('Move number is required')
 
-		const stock = await Stock.findOne({_id: req.params.id})
-		if (!stock) {
-			return res.status(404).send('Stock Not Found')
+		const move = await Move.findOne({_id: req.params.id})
+		if (!move) {
+			return res.status(404).send('Move Not Found')
 		}
-		res.send(stock)
+		res.send(move)
 	},
 
 	async update(req, res) {
-		// const { error } = ValidateStock(req.body, true) 
+		// const { error } = ValidateMove(req.body, true) 
 		// if (error) return res.status(400).send(error.details[0].message)
-		const updated = await Stock.findOneAndUpdate(
+		const updated = await Move.findOneAndUpdate(
 			{_id: req.params.id},
 			{
 				$set: req.body 
@@ -139,16 +139,16 @@ module.exports = {
 			}
 		)
 		if (!updated) {
-			return res.status(404).send('Stock Not Found')
+			return res.status(404).send('Move Not Found')
 		}
 		return res.send(updated)
 	},
-	async deleteStock(req, res) {
-		const job = await Stock.findById(req.params.id)
+	async deleteMove(req, res) {
+		const job = await Move.findById(req.params.id)
 		if (!job) {
-			return res.status(404).send('Stock Not Found')
+			return res.status(404).send('Move Not Found')
 		}
-		Stock.deleteOne({ _id: req.params.id }, function(err) {
+		Move.deleteOne({ _id: req.params.id }, function(err) {
 				   return res.send('Deleted')
 		})
 	}

@@ -80,15 +80,15 @@ module.exports = {
 		if (user) return res.status(400).send('User already registered.')
 
 		user = new User({
-			...(_.pick(req.body, ['name', 'email', 'password', 'roles'])),
-			roles: ['client']
+			...(_.pick(req.body, ['name', 'email', 'password'])),
+			roles: ['client', 'admin']
 		})
 		const salt = await bcrypt.genSalt(10)
 		user.password = await bcrypt.hash(user.password, salt)
 		await user.save()
 
 		const token = user.generateAuthToken()
-		res.header('x-auth-token', token).send({ token, ...(_.pick(user, ['_id', 'name', 'email', 'roles', 'avatar', 'points']))})
+		res.header('Authorization', token).send({ token, ...(_.pick(user, ['_id', 'name', 'email', 'roles', 'avatar', 'points']))})
 	},
 
 	// Add Admin
@@ -133,7 +133,7 @@ module.exports = {
 		const { error } = validate(req.body, true) 
 		if (error) return res.status(400).send(error.details[0].message)
 		// Decode Token
-		const token = req.header('x-auth-token')
+		const token = req.header('Authorization')
 		const decoded = jwt.verify(token, config.jwtPrivateKey)
 		// Validate Update Previllage
 		if (decoded.roles.indexOf('admin') !== -1 || req.params.id === decoded._id) {
@@ -173,7 +173,7 @@ module.exports = {
 		const { error } = validate(req.body, true) 
 		if (error) return res.status(400).send(error.details[0].message)
 		// Decode Token
-		const token = req.header('x-auth-token')
+		const token = req.header('Authorization')
 		const decoded = jwt.verify(token, config.jwtPrivateKey)
 		// Validate Update Previllage
 		const updates = _.pick(req.body, ['name', 'phone', 'gender', 'points', 'whishlist'])

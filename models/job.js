@@ -2,6 +2,9 @@ const config = require('../config')
 const Joi = require('joi')
 const mongoose = require('mongoose')
 const _ = require('lodash')
+const moment = require('moment')
+require('moment-timezone')
+
 const job = new mongoose.Schema({
 	client: {
 		type: Object,
@@ -12,7 +15,7 @@ const job = new mongoose.Schema({
 	},
 	timein: {
 		type: Date,
-		default: Date.now()
+		default: moment.tz('UTC').toDate()
 	},
 	timeleave: {
 		type: Date,
