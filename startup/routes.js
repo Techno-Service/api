@@ -10,7 +10,16 @@ const move = require('../routes/move')
 const locations = require('../routes/locations')
 const error = require('../middleware/error')
 const cors = require('cors')
-
+const whitelist = ['*', 'https://8080-dot-9728892-dot-devshell.appspot.com']
+var corsOptions = {
+	origin: function (origin, callback) {
+		if (whitelist.indexOf(origin) !== -1) {
+			callback(null, true)
+		} else {
+			callback(new Error('Not allowed by CORS'))
+		}
+	}
+}
 
 // const formData = require('express-form-data')
 // const os = require('os')
@@ -18,7 +27,7 @@ const cors = require('cors')
 
 
 module.exports = function(app) {
-	app.use(cors())
+	app.use(cors(corsOptions))
 	app.use(express.json())
 	app.use( bodyParser.json() )       // to support JSON-encoded bodies
 	app.use(bodyParser.urlencoded({
