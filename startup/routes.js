@@ -18,7 +18,7 @@ const cors = require('cors')
 
 
 module.exports = function(app) {
-	app.options.('https://8080-dot-9728892-dot-devshell.appspot.com', cors())
+	app.options('https://8080-dot-9728892-dot-devshell.appspot.com', cors())
 	app.use(express.json())
 	app.use( bodyParser.json() )       // to support JSON-encoded bodies
 	app.use(bodyParser.urlencoded({
