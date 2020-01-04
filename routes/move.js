@@ -7,15 +7,15 @@ const moveController = require('../controllers/move')
 router.get('/' ,moveController.getAll)
 
 // Get One
-router.get('/:id' , auth() ,moveController.getOne)
+router.get('/:id' , auth('stocks') ,moveController.getOne)
 
 // Register
-router.post('/', auth() ,moveController.add)
+router.post('/', auth('stocks') ,moveController.add)
 
 // Update
-router.put('/:id' , auth() ,moveController.update)
+router.put('/:id' , auth('stocks') ,moveController.update)
 
 // Delete
-router.delete('/:id' , auth(),moveController.deleteMove)
+router.delete('/:id' , auth('stocks'),moveController.deleteMove)
 
 module.exports = router 

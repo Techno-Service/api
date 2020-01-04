@@ -20,11 +20,7 @@ const stock = new mongoose.Schema({
 	},
 	vendor: {
 		type: Object,
-		default: {
-			phone: '+201011133122',
-			name: 'Jhon Doe',
-			address: 'al-khalifa al maamon, heliopolis'
-		},
+		default: null,
 	},
 	created_at: {
 		type: Date,
@@ -35,11 +31,24 @@ const stock = new mongoose.Schema({
 		default: 0,
 		min: 0
 	},
+	import_price: {
+		type: Number,
+		default: 0,
+		min: 0
+	},
 	count: {
 		type: Number,
 		default: 0
 	},
 	points: {
+		type: Number,
+		default: 0
+	},
+	imports: {
+		type: Number,
+		default: 0
+	},
+	exports: {
 		type: Number,
 		default: 0
 	},
@@ -57,6 +66,14 @@ const stock = new mongoose.Schema({
 		default: []
 	},
 	external: {
+		type: Boolean,
+		default: false
+	},
+	trashed: {
+		type: Boolean,
+		default: false
+	},
+	quick_add: {
 		type: Boolean,
 		default: false
 	}

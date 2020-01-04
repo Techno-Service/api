@@ -119,7 +119,7 @@ function validateUser(user, idRequired = false) {
 	const schema = {
 		name: Joi.string().min(5).max(50).required(),	
 		email: Joi.string().email().required(),
-		roles: Joi.array().min(1).items(Joi.string().valid('client', 'admin', 'designer')),
+		roles: Joi.array().min(1).items(Joi.string().valid('client', 'admin', 'stocks', 'jobs')),
 		phone: Joi.string().min(5).max(20).allow(null),
 		gender: Joi.string().min(3).max(50).allow(null),
 		points: Joi.number().min(0),

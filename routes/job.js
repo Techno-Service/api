@@ -4,18 +4,18 @@ const router = express.Router()
 const jobController = require('../controllers/job')
 
 // Get
-router.get('/' ,auth(), jobController.getAll)
+router.get('/' ,auth('jobs'), jobController.getAll)
 
 // Get One
-router.get('/:id' , auth() ,jobController.getOne)
+router.get('/:id' , auth('jobs') ,jobController.getOne)
 
 // Register
-router.post('/', auth() ,jobController.add)
+router.post('/', auth('jobs') ,jobController.add)
 
 // Update
-router.put('/:id' , auth() ,jobController.update)
+router.put('/:id' , auth('jobs') ,jobController.update)
 
 // Delete
-router.delete('/:id' , auth(),jobController.deleteJob)
+router.delete('/:id' , auth('jobs'),jobController.deleteJob)
 
 module.exports = router 

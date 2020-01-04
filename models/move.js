@@ -39,6 +39,10 @@ const moves = new mongoose.Schema({
 	type: {
 		type: String,
 		default: 'import'
+	},
+	by: {
+		type: Object,
+		default: null
 	}
 })
 

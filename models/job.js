@@ -17,6 +17,10 @@ const job = new mongoose.Schema({
 		type: Date,
 		default: moment.tz('UTC').toDate()
 	},
+	requirements: {
+		type: Array,
+		default: []
+	},
 	timeleave: {
 		type: Date,
 		default: null
@@ -76,6 +80,9 @@ function validateJob(job, update = false) {
 			phone: Joi.string().min(1).max(255)
 		}),
 		reciptionist: Joi.string().min(1).max(255),
+		requirements: Joi.array().optional(),
+		timein: Joi.optional(),
+		timeleave: Joi.optional(),
 	}
 	if (update) {
 		schema.complain = Joi.string().min(1).max(255)
