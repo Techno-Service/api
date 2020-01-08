@@ -6,7 +6,7 @@ const config = require('../config')
 const { Move } = require('../models/move')
 
 // Sortable Attributes  
-const sortableAttributes = ['timein', 'sales', 'price']
+const sortableAttributes = ['created_at', 'sales', 'price']
 // Validate Sort Key
 const validSort = val => (sortableAttributes.indexOf(val) !== -1) ? val : false
 
@@ -15,7 +15,7 @@ const handleSpecialChars = val => val.replace(/[!@#$%^&*(),.?":{}|<>+-]/, t => `
 module.exports = {
 	async getAll(req, res) {
     const page = req.query.page ? parseInt(req.query.page, 10) : 0
-    const sort = validSort(req.query.sort) || 'timein'
+    const sort = validSort(req.query.sort) || 'created_at'
     const date = req.query.date
       ? req.query.date.split(',').map(d => (d && d.length ? d : null))
       : null
@@ -70,7 +70,7 @@ module.exports = {
         if (date[0]) filters.created_at = { $gte: new Date(date[0]) }
         if (date[1])
           filters.created_at = date[0]
-            ? { ...filters.timein, $lte: new Date(date[1]) }
+            ? { ...filters.created_at, $lte: new Date(date[1]) }
             : { $lte: new Date(date[1]) }
       }
     }

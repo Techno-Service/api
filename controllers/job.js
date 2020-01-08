@@ -41,6 +41,10 @@ module.exports = {
     const brandmlt = req.query.brandmlt
       ? req.query.brandmlt.split(',').map(d => (d && d.length ? d : null))
       : null
+   const requirements = req.query.requirements || null
+   const requirementsmlt = req.query.requirementsmlt
+      ? req.query.requirementsmlt.split(',').map(d => (d && d.length ? d : null))
+      : null
     const status = req.query.status ? req.query.status : null
     const limit = req.query.limit ? parseInt(req.query.limit, 10) : 5
     const select = req.query.select
@@ -76,6 +80,13 @@ module.exports = {
       filters['operations.part'] = {
         $regex: new RegExp(handleSpecialChars(part), 'i')
       }
+    }
+    if (requirements && typeof requirements === 'string' && requirements.length) {
+      filters['requirements.name'] = {
+        $regex: new RegExp(handleSpecialChars(requirements), 'i')
+      }
+    } else if (requirementsmlt && requirementsmlt.length) {
+      filters['requirements.name'] = { $in: requirementsmlt }
     }
     if (status) {
       filters.status = status
@@ -132,10 +143,10 @@ module.exports = {
       'client.phone': req.body.client.phone,
       'client.name': req.body.client.name,
       'car.brand': req.body.car.brand,
-      'status': 'running'
+      'status': {$in: ['running', 'postponed']}
   })
   if (clientRunningJobs && clientRunningJobs.length)
-    return res.status(400).send(`This client already has a running job, Check job #${clientRunningJobs[clientRunningJobs.length - 1].job_no}`)
+    return res.status(400).send(`This client already has a ${clientRunningJobs[clientRunningJobs.length - 1].status} job, Check job #${clientRunningJobs[clientRunningJobs.length - 1].job_no}`)
     const instance = await Deskaf.find({})
     const job_no =
       instance && instance[0].jobs_count ? instance[0].jobs_count : 0

@@ -85,8 +85,8 @@ function validateJob(job, update = false) {
 		timeleave: Joi.optional(),
 	}
 	if (update) {
-		schema.complain = Joi.string().min(1).max(255)
-		schema.notes = Joi.string().min(1).max(255)
+		schema.complain = Joi.string().max(255).allow('').optional()
+		schema.notes = Joi.string().max(255).allow('').optional()
 		schema.status = Joi.string().min(1).max(255)
 		schema.operations = Joi.array()
 	}
