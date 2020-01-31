@@ -26,8 +26,8 @@ module.exports = {
     const desc = req.query.desc && req.query.desc !== 'yes' ? 1 : -1
     const stats = !!(req.query.stats && req.query.stats === 'yes')
     const external = !!(req.query.external && req.query.external === 'yes')
-    const ignoreExternal = !!(
-      req.query.ignore_external && req.query.ignore_external === 'yes'
+    const nonExternal = !!(
+      req.query.non_external && req.query.non_external === 'yes'
     )
     const phone = req.query.phone || null
     const vendorName = req.query.vendor_name || null
@@ -53,7 +53,7 @@ module.exports = {
       ? req.query.select.split(',').join(' ')
       : null
     const filters = {}
-    if (!ignoreExternal) {
+    if (!nonExternal || !external) {
       filters.external = external
     }
     if (phone && phone.length) {
@@ -107,6 +107,10 @@ module.exports = {
       }
     }
 
+    // Removing Trashed and Hidden Stock
+    filters.trashed = false
+    filters.hidden = false
+
     const count = await Stock.find(filters)
     const pages = Math.ceil(count.length / limit, 10)
     const sorter = {}
@@ -125,7 +129,7 @@ module.exports = {
         pages: stats ? null : pages,
         limit: stats ? null : limit,
         stats,
-        // filters,
+        filters,
         totalPrice: _.sumBy(count, p => p.price)
       }
       return res.send(result)
@@ -162,7 +166,7 @@ module.exports = {
     try {
       const inc = req.body.count * -1
       const updated = await Stock.findOneAndUpdate(
-        { _id: req.body.item._id  },
+        { _id: req.body.item._id, trashed: false  },
         { 
           $inc: { 
             count: inc,
@@ -173,7 +177,7 @@ module.exports = {
         { new: true }
       )
       if (!updated) {
-        return res.status(404).send('Stock Not Found')
+        return res.status(404).send('Stock Not Found, it could be trashed.')
       }
       const move = await new Move({
         item: req.body.item,

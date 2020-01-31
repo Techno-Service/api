@@ -41,9 +41,11 @@ module.exports = {
     const brandmlt = req.query.brandmlt
       ? req.query.brandmlt.split(',').map(d => (d && d.length ? d : null))
       : null
-   const requirements = req.query.requirements || null
-   const requirementsmlt = req.query.requirementsmlt
-      ? req.query.requirementsmlt.split(',').map(d => (d && d.length ? d : null))
+    const requirements = req.query.requirements || null
+    const requirementsmlt = req.query.requirementsmlt
+      ? req.query.requirementsmlt
+          .split(',')
+          .map(d => (d && d.length ? d : null))
       : null
     const status = req.query.status ? req.query.status : null
     const limit = req.query.limit ? parseInt(req.query.limit, 10) : 5
@@ -81,7 +83,11 @@ module.exports = {
         $regex: new RegExp(handleSpecialChars(part), 'i')
       }
     }
-    if (requirements && typeof requirements === 'string' && requirements.length) {
+    if (
+      requirements &&
+      typeof requirements === 'string' &&
+      requirements.length
+    ) {
       filters['requirements.name'] = {
         $regex: new RegExp(handleSpecialChars(requirements), 'i')
       }
@@ -139,14 +145,22 @@ module.exports = {
     const { error } = ValidateJob(req.body)
     if (error) return res.status(400).send(error.details[0].message)
     // Check dev coi
-  const clientRunningJobs = await Job.find({
+    const clientRunningJobs = await Job.find({
       'client.phone': req.body.client.phone,
       'client.name': req.body.client.name,
       'car.brand': req.body.car.brand,
-      'status': {$in: ['running', 'postponed']}
-  })
-  if (clientRunningJobs && clientRunningJobs.length)
-    return res.status(400).send(`This client already has a ${clientRunningJobs[clientRunningJobs.length - 1].status} job, Check job #${clientRunningJobs[clientRunningJobs.length - 1].job_no}`)
+      status: { $in: ['running', 'postponed'] }
+    })
+    if (clientRunningJobs && clientRunningJobs.length)
+      return res
+        .status(400)
+        .send(
+          `This client already has a ${
+            clientRunningJobs[clientRunningJobs.length - 1].status
+          } job, Check job #${
+            clientRunningJobs[clientRunningJobs.length - 1].job_no
+          }`
+        )
     const instance = await Deskaf.find({})
     const job_no =
       instance && instance[0].jobs_count ? instance[0].jobs_count : 0
@@ -161,14 +175,34 @@ module.exports = {
       'client.name': req.body.client.name,
       'car.brand': req.body.car.brand
     })
-    const requirements = clientJobs.length
-      ? clientJobs[clientJobs.length - 1].requirements
-      : []
+    let requirements = []
+    if (clientJobs.length) {
+      requirements = clientJobs[clientJobs.length - 1].requirements
+        .filter(r => !r.done)
+        .map(r => ({
+          ...r,
+          init_date: r.created_at,
+          created_at: moment.tz('UTC').toDate()
+        }))
+      // shift the old requirements
+      await Job.findOneAndUpdate(
+        { _id: clientJobs[clientJobs.length - 1]._id },
+        {
+          $set: {
+            requirements: clientJobs[clientJobs.length - 1].requirements.map(r => ({
+              ...r,
+              shifted: !r.done
+            }))
+          }
+        }
+      )
+    }
     const job = new Job({
       ...req.body,
       job_no,
       price,
       requirements,
+      applied_vat: instance[0].vat,
       timein: moment.tz('UTC').toDate()
     })
     await job.save()
@@ -215,7 +249,7 @@ module.exports = {
       if (payload.status && payload.status.toLowerCase() === 'finished') {
         payload.timeleave = moment.tz('UTC').toDate()
       }
-      payload.price = parseFloat( payload.price, 10 )
+      payload.price = parseFloat(payload.price, 10)
       const updated = await Job.findOneAndUpdate(
         { _id: req.params.id },
         {
@@ -243,9 +277,40 @@ module.exports = {
         await Move.deleteOne({ _id: lastMoves[m]._id })
       }
       // Update Moves
+      let move
+      if (req.body.promotion && req.body.promotion_data) {
+        const promo = await Stock.find({
+          name: `Promotion: ${req.body.promotion}`,
+          category: 'Automated Promotion'
+        })
+        if (promo && promo.length) {
+          move = await new Move({
+            item: {
+              ...promo[0],
+              import_price: req.body.promotion_data.discount,
+              price: 0
+            },
+            job: _.pick(updated, [
+              '_id',
+              'job_no',
+              'timein',
+              'timeleave',
+              'car',
+              'client'
+            ]),
+            count: 1,
+            price: req.body.promotion_data.discount
+          })
+          await move.save()
+          // Decreament Stock
+          await Stock.findOneAndUpdate(
+            { _id: promo[0]._id },
+            { $inc: { count: -1 } }
+          )
+        }
+      }
       if (req.body.operations && req.body.operations.length) {
         let i
-        let move
         for (i = 0; i < req.body.operations.length; i += 1) {
           if (req.body.operations[i].makeMove) {
             move = await new Move({

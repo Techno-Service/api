@@ -7,18 +7,18 @@ const stockController = require('../controllers/stock')
 router.get('/' ,stockController.getAll)
 
 // Get One
-router.get('/:id' , auth('stock') ,stockController.getOne)
+router.get('/:id' , auth('stocks') ,stockController.getOne)
 
 // Register
-router.post('/', auth('stock') ,stockController.add)
+router.post('/', auth('stocks') ,stockController.add)
 
 // Stock Move
-router.post('/:id/move', auth('stock') ,stockController.stockMove)
+router.post('/:id/move', auth('stocks') ,stockController.stockMove)
 
 // Update
-router.put('/:id' , auth('stock') ,stockController.update)
+router.put('/:id' , auth('stocks') ,stockController.update)
 
 // Delete
-router.delete('/:id' , auth('stock'),stockController.deleteStock)
+router.delete('/:id' , auth('stocks'),stockController.deleteStock)
 
 module.exports = router 

@@ -140,7 +140,8 @@ module.exports = {
 		const decoded = jwt.verify(token, config.jwtPrivateKey)
 		// Validate Update Previllage
 		if (decoded.roles.indexOf('admin') !== -1 || req.params.id === decoded._id) {
-			const updates = _.pick(req.body, ['name', 'phone', 'gender', 'points', 'whishlist'])
+			const picks = ['name', 'phone', 'gender', 'points', 'whishlist', 'email']
+			const updates = _.pick(req.body, picks)
 			// Add Roles if Admin
 			if (req.body.roles && decoded.roles.indexOf('admin') !== -1) {
 				updates.roles = req.body.roles

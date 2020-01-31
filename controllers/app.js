@@ -2,6 +2,7 @@ const path = require('path')
 const mime = require('mime-types')
 const fs = require('fs')
 const {Deskaf, validate} = require('../models/app')
+const { Stock } = require('../models/stock')
 const { uploadBackground } = require('../middleware/multer')
 
 
@@ -47,6 +48,25 @@ module.exports = {
 			{ multi: true , new : true }
 		)
 	    const appSpecs = await Deskaf.find({})
+	    if (req.body.promotions && req.body.promotions) {
+	    	let i
+	    	let temp
+	    	for (i = 0; i < req.body.promotions.length; i += 1) {
+	    		temp = await Stock.find({ name: `Promotion: ${req.body.promotions[i].name}`, category: 'Automated Promotion' })
+	    		if (!temp.length) {
+	    			const newPromotion = new Stock({
+	    				name: `Promotion: ${req.body.promotions[i].name}`,
+	    				category: 'Automated Promotion',
+	    				import_price: req.body.promotions[i].amount,
+	    				price: 0,
+	    				notes: req.body.promotions[i].type,
+	    				external: true,
+	    				hidden: true
+	    			})
+	    			await newPromotion.save()
+	    		}
+	    	}
+	    }
 		if (!appSpecs || !appSpecs.length) return res.status(404).send('Deskaf Not Found.')
 		res.send(appSpecs[0])
 	},

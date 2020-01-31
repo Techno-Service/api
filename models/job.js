@@ -63,6 +63,26 @@ const job = new mongoose.Schema({
 	reciptionist: {
 		type: String,
 		default: null,
+	},
+	promotion: {
+		type: String,
+		default: null
+	},
+	promotion_data: {
+		type: Object,
+		default: null
+	},
+	vat: {
+		type: Number,
+		default: 0
+	},
+	applied_vat: {
+		type: Number,
+		default: 0
+	},
+	apply_vat: {
+		type: Boolean,
+		default: true
 	}
 })
 
@@ -89,6 +109,12 @@ function validateJob(job, update = false) {
 		schema.notes = Joi.string().max(255).allow('').optional()
 		schema.status = Joi.string().min(1).max(255)
 		schema.operations = Joi.array()
+		schema.promotion = Joi.optional()
+		schema.vat = Joi.optional()
+		schema.applied_vat = Joi.optional()
+		schema.apply_vat = Joi.optional()
+		schema.price = Joi.optional()
+		schema.promotion_data = Joi.optional()
 	}
 	return Joi.validate(job, schema)
 }

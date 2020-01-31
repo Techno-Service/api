@@ -27,19 +27,19 @@ const deskafSchema = new mongoose.Schema({
 		type: String,
 		minlength: 5,
 		maxlength: 255,
-		default: 'https://www.facebook.com/Design.kaf/'
+		default: 'https://www.facebook.com/'
 	},
 	twitter: {
 		type: String,
 		minlength: 5,
 		maxlength: 255,
-		default: 'https://twitter.com/designkaf'
+		default: 'https://twitter.com/'
 	},
 	instagram: {
 		type: String,
 		minlength: 5,
 		maxlength: 255,
-		default: 'https://www.instagram.com/design.kaf'
+		default: 'https://www.instagram.com/'
 	},
 	socialmedia: {
 		type: Object,
@@ -50,6 +50,34 @@ const deskafSchema = new mongoose.Schema({
 	jobs_count: {
 		type: Number,
 		default: 0
+	},
+	vat: {
+		type: Number,
+		default: 0
+	},
+	currency: {
+		type: String,
+		default: 'LE'
+	},
+	title: {
+		type: String,
+		default: 'Techno Service'
+	},
+	subtitle: {
+		type: String,
+		default: 'Egypt'
+	},
+	address: {
+		type: String,
+		default: '9 Mohamed Refaat, El nozha el gededa'
+	},
+	phones: {
+		type: Array,
+		default: ['01008645544']
+	},
+	promotions: {
+		type: Array,
+		default: []
 	}
 })
 
@@ -59,10 +87,19 @@ const Deskaf = mongoose.model('Deskaf', deskafSchema)
 function validateDeskaf(deskaf) {
 	const schema = {
 		background: Joi.string().min(1).max(2000),
+		jobs_count: Joi.number().min(0),
 		background_redirect: Joi.object(),
 		facebook: Joi.string().min(5).max(255),
 		twitter: Joi.string().min(5).max(255),
-		instagram: Joi.string().min(5).max(255)
+		instagram: Joi.string().min(5).max(255),
+		socialmedia: Joi.optional(),
+		phones: Joi.optional(),
+		address: Joi.optional(),
+		promotions: Joi.optional(),
+		title: Joi.optional(),
+		subtitle: Joi.optional(),
+		currency: Joi.optional(),
+		vat: Joi.optional(),
 	}
 	return Joi.validate(deskaf, schema)
 }
