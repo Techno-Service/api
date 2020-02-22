@@ -24,7 +24,10 @@ module.exports = {
 		if (appSpecs && appSpecs.length) {
 			return res.send(appSpecs[0])
 		} else {
-			return res.status(404).send('No App Configurations Found.')
+			// return res.status(404).send('No App Configurations Found.')
+			const deskaf = new Deskaf(req.body)
+			await deskaf.save()
+			return res.send(deskaf)
 		}
 	},
 	// Add Client Deskaf
@@ -35,7 +38,7 @@ module.exports = {
 		if (appSpecs && appSpecs.length) return res.status(400).send('You Cant Add Multiple Configurations.')
 		deskaf = new Deskaf(req.body)
 		await deskaf.save()
-		res.send(deskaf)
+		return res.send(deskaf)
 	},
 	// Update deskaf
 

@@ -214,7 +214,9 @@ module.exports = {
         if (req.body.operations[i].makeMove) {
           move = new Move({
             ...req.body.operations[i],
-            ...job
+            ...job,
+            count: req.body.operations[i] * -1,
+            type: 'export'
           })
           await move.save()
         }

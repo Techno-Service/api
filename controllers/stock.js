@@ -141,6 +141,20 @@ module.exports = {
   async add(req, res) {
     stock = new Stock({ ...req.body })
     await stock.save()
+    const move = await new Move({
+        item: {
+          ...stock,
+          makeMove: true,
+
+        },
+        job: null,
+        count: req.body.count,
+        type: 'import',
+        price:
+          parseFloat(stock.count, 10) *
+          parseFloat(stock.import_price, 10)
+      })
+      await move.save()
     return res.send(stock)
   },
 
@@ -164,7 +178,11 @@ module.exports = {
     //   await Stock.findOneAndUpdate({ _id: all[m]._id }, { $inc: { import_price: _.random(100, 1000), price: _.random(100, 2000) } })
     // }
     try {
-      const inc = req.body.count * -1
+      const findCheck = await Stock.find({ _id: req.body.item._id, trashed: false  })
+      if (!findCheck) {
+        return res.status(404).send('Stock Not Found, it could be trashed.')
+      }
+      const inc = req.body.count
       const updated = await Stock.findOneAndUpdate(
         { _id: req.body.item._id, trashed: false  },
         { 
@@ -176,16 +194,14 @@ module.exports = {
           },
         { new: true }
       )
-      if (!updated) {
-        return res.status(404).send('Stock Not Found, it could be trashed.')
-      }
       const move = await new Move({
         item: req.body.item,
         job: null,
+        type: req.body.count > 0 ? 'import' : 'export',
         count: req.body.count,
         price:
-          parseFloat(updated.count, 10) *
-          parseFloat(updated.price, 10)
+          Math.abs(parseFloat(req.body.count, 10)) *
+          parseFloat(req.body.count > 0 ? updated.import_price : updated.price, 10)
       })
       await move.save()
       return res.send(updated)
