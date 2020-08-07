@@ -301,7 +301,7 @@ module.exports = {
               'client'
             ]),
             count: 1,
-            price: req.body.promotion_data.discount
+            price: req.body.promotion_data.discount,
           })
           await move.save()
           // Decreament Stock
@@ -326,6 +326,7 @@ module.exports = {
                 'client'
               ]),
               count: req.body.operations[i].count,
+              type: 'export',
               price:
                 parseFloat(req.body.operations[i].count, 10) *
                 parseFloat(req.body.operations[i].price, 10)
